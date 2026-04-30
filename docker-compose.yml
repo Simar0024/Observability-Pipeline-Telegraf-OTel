@@ -1,3 +1,11 @@
+networks:
+  observability-net:
+    driver: bridge
+
+volumes:
+  app_logs:
+    driver: local
+
 services:
   web-app:
     build: .
@@ -5,29 +13,63 @@ services:
     image: iis-observability-web-app
     volumes:
       - .:/app
+      - app_logs:/opt/logs
     ports:
-      - "8090:80"
+      - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
+      - LOG_FILE_PATH=/opt/logs/web-app.log
+    networks:
+      - observability-net
 
   telegraf:
     image: telegraf:latest
     container_name: telegraf
-    volumes:
-      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    user: "0:0"
+    entrypoint: ["/usr/bin/telegraf"]
+    command: ["--config", "/etc/telegraf/telegraf.conf"]
     ports:
       - "9273:9273"
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - app_logs:/opt/logs
+    networks:
+      - observability-net
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     container_name: otel-collector
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - app_logs:/opt/logs
     command: ["--config=/etc/otel-collector-config.yaml"]
     ports:
       - "4317:4317"
       - "4318:4318"
       - "8889:8889"
+    networks:
+      - observability-net
+
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - observability-net
+
+  promtail:
+    image: grafana/promtail:2.9.2
+    container_name: promtail
+    volumes:
+      - app_logs:/opt/logs:ro
+      - ./promtail-config.yaml:/etc/promtail/config.yaml
+    command: -config.file=/etc/promtail/config.yaml
+    depends_on:
+      - loki
+    networks:
+      - observability-net
 
   prometheus:
     image: prom/prometheus:latest
@@ -42,11 +84,20 @@ services:
       - web-app
       - otel-collector
       - telegraf
+    networks:
+      - observability-net
 
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
     ports:
       - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
     depends_on:
+      - loki
       - prometheus
+    networks:
+      - observability-net

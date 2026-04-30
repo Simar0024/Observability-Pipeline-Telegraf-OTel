@@ -4,20 +4,45 @@ import threading
 import psutil
 import logging
 import random
+import json
+from pathlib import Path
 from fastapi import FastAPI, BackgroundTasks, HTTPException, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import generate_latest, Counter, Gauge, Histogram, REGISTRY
 
-# Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s')
+# Define Log Directory and File
+LOG_DIR = Path("/opt/logs")
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+LOG_FILE = LOG_DIR / "web-app.log"
+
+# JSON Formatter for advanced observability
+class JSONFormatter(logging.Formatter):
+    def format(self, record):
+        log_record = {
+            "timestamp": self.formatTime(record, self.datefmt),
+            "level": record.levelname,
+            "module": record.module,
+            "line": record.lineno,
+            "message": record.getMessage(),
+        }
+        return json.dumps(log_record)
+
 logger = logging.getLogger("ProdObservabilityApp")
+logger.setLevel(logging.INFO)
 
-app = FastAPI(title="ProdObservabilityAPI", version="2.1.0")
-BASE_DIR = Path(__file__).resolve().parent
+# File and Stream Handlers
+file_handler = logging.FileHandler(LOG_FILE)
+file_handler.setFormatter(JSONFormatter())
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(JSONFormatter())
 
-templates = Jinja2Templates(directory=str(BASE_DIR))
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
+
+app = FastAPI(title="ProdObservabilityAPI", version="2.2.0")
+templates = Jinja2Templates(directory=".")
 
 app.add_middleware(
     CORSMiddleware,
@@ -49,11 +74,18 @@ async def metrics_middleware(request, call_next):
     REQUEST_COUNT.labels(method=method, endpoint=path, status=status_code).inc()
     REQUEST_LATENCY.labels(method=method, endpoint=path).observe(duration)
     
+    log_data = {
+        "method": method,
+        "path": path,
+        "status": status_code,
+        "duration": round(duration, 4)
+    }
+
     if status_code >= 400:
         REQUEST_ERRORS.labels(method=method, endpoint=path).inc()
-        logger.warning(f"Error {status_code} on {method} {path} - Duration: {duration:.4f}s")
+        logger.error(f"Request error encountered", extra=log_data)
     else:
-        logger.info(f"{method} {path} - Status: {status_code} - Duration: {duration:.4f}s")
+        logger.info(f"Request successfully processed", extra=log_data)
         
     return response
 

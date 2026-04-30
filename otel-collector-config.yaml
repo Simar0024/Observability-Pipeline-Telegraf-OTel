@@ -8,10 +8,26 @@ receivers:
 
 processors:
   batch:
+    timeout: 1s
+    send_batch_size: 256
 
 exporters:
+  otlp_grpc:
+    endpoint: "127.0.0.1:4317"
+    tls:
+      insecure: true
+
+  otlp_http/loki:
+    endpoint: "http://localhost:3100/otlp"
+
+  file:
+    path: /opt/logs/otel-collector.log
+    rotation:
+      max_megabytes: 10
+      max_backups: 3
   debug:
     verbosity: detailed
+  
   prometheus:
     endpoint: 0.0.0.0:8889
 
@@ -24,8 +40,8 @@ service:
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug]
+      exporters: [file, debug, otlp_grpc, otlp_http/loki]
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug]
+      exporters: [debug, otlp_grpc]
