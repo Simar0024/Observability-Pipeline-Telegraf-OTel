@@ -11,6 +11,28 @@ from fastapi.responses import PlainTextResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import generate_latest, Counter, Gauge, Histogram, REGISTRY
+from opentelemetry._logs import set_logger_provider
+from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
+from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
+from opentelemetry.sdk.resources import Resource
+
+# Initialize Logger Provider with Resource Attributes using .create()
+resource = Resource.create(attributes={"service.name": "web-app"})
+provider = LoggerProvider(resource=resource)
+set_logger_provider(provider)
+
+# Set up OTLP Exporter (pointing to the collector)
+exporter = OTLPLogExporter(endpoint="http://otel-collector:4317", insecure=True)
+provider.add_log_record_processor(BatchLogRecordProcessor(exporter))
+
+# Attach to Python Standard Logging
+handler = LoggingHandler(level=logging.INFO, logger_provider=provider)
+logging.getLogger().addHandler(handler)
+logging.getLogger().setLevel(logging.INFO)
+
+# Test log
+logging.info("OTLP log successfully pushed to the collector.")
 
 # Define Log Directory and File
 LOG_DIR = Path("/opt/logs")

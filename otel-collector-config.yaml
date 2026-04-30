@@ -13,12 +13,12 @@ processors:
 
 exporters:
   otlp_grpc:
-    endpoint: "127.0.0.1:4317"
+    endpoint: "otel-collector:4317"
     tls:
       insecure: true
 
   otlp_http/loki:
-    endpoint: "http://localhost:3100/otlp"
+    endpoint: http://loki:3100/otlp
 
   file:
     path: /opt/logs/otel-collector.log

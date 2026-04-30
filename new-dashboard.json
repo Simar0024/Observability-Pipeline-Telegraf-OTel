@@ -307,7 +307,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{service_name=\"otelcol-contrib\"}",
+          "expr": "{{service_name=\"web-app\"}",
           "refId": "A"
         }
       ],
