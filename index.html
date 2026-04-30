@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Observability Platform</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .console-text {
+            font-family: 'Fira Code', Consolas, Monaco, 'Courier New', monospace;
+        }
+        .glow-card {
+            box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glow-card:hover {
+            box-shadow: 0 10px 25px -4px rgba(99, 102, 241, 0.18);
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased select-none">
+    <div class="min-h-full flex flex-col">
+        <nav class="border-b border-slate-900 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 shadow-sm shadow-slate-900/50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-server text-indigo-500 text-2xl animate-pulse"></i>
+                        <span class="font-black text-xl tracking-tight bg-gradient-to-r from-indigo-400 via-cyan-400 to-sky-300 bg-clip-text text-transparent">Enterprise Observability Platform</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="px-3 py-1 text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center gap-2">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span> 
+                            Production Ready
+                        </span>
+                        <span class="text-slate-400 text-sm"><i class="fa-regular fa-clock mr-1"></i> <span id="uptime-display">--:--:--</span></span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+                
+                <div class="glow-card bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-semibold tracking-wider uppercase text-slate-500">CPU Usage</span>
+                        <i class="fa-solid fa-microchip text-indigo-400 bg-indigo-500/10 p-2.5 rounded-xl"></i>
+                    </div>
+                    <div>
+                        <span id="cpu-val" class="text-4xl font-black tracking-tight text-white transition-all duration-300">0.0%</span>
+                        <p class="text-xs text-slate-500 mt-1 flex justify-between">
+                            <span>Target Pool</span>
+                            <span id="cpu-cores">-- Cores</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="glow-card bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-semibold tracking-wider uppercase text-slate-500">Memory Usage</span>
+                        <i class="fa-solid fa-memory text-cyan-400 bg-cyan-500/10 p-2.5 rounded-xl"></i>
+                    </div>
+                    <div>
+                        <span id="mem-val" class="text-4xl font-black tracking-tight text-white transition-all duration-300">0 MB</span>
+                        <p class="text-xs text-slate-500 mt-1">Resident Set Size (RSS)</p>
+                    </div>
+                </div>
+
+                <div class="glow-card bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-semibold tracking-wider uppercase text-slate-500">Active Threads</span>
+                        <i class="fa-solid fa-sitemap text-emerald-400 bg-emerald-500/10 p-2.5 rounded-xl"></i>
+                    </div>
+                    <div>
+                        <span id="threads-val" class="text-4xl font-black tracking-tight text-white transition-all duration-300">0</span>
+                        <p class="text-xs text-slate-500 mt-1">Concurrency Engine</p>
+                    </div>
+                </div>
+
+                <div class="glow-card bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-semibold tracking-wider uppercase text-slate-500">DB Connections</span>
+                        <i class="fa-solid fa-database text-amber-400 bg-amber-500/10 p-2.5 rounded-xl"></i>
+                    </div>
+                    <div>
+                        <span id="db-val" class="text-4xl font-black tracking-tight text-white transition-all duration-300">0</span>
+                        <p class="text-xs text-slate-500 mt-1">Connection Pool Size</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 bg-slate-900/60 border border-slate-800 rounded-2xl p-8 flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-200 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-terminal text-indigo-400"></i> Engineering Diagnostics
+                        </h2>
+                        <p class="text-sm text-slate-400 max-w-2xl mb-6 leading-relaxed">
+                            Trigger simulated load exceptions or processing failures to monitor and test system behavior.
+                        </p>
+                        
+                        <div class="flex flex-col gap-3">
+                            <button onclick="triggerAction('/api/v1/generate-load?duration=15&intensity=50000', 'Load simulation triggered', 'indigo')" class="group cursor-pointer flex items-center justify-between w-full px-4 py-3 rounded-xl border border-indigo-500/20 bg-indigo-600/10 text-indigo-300 hover:bg-indigo-600/20 hover:text-indigo-200 transition-all text-sm font-semibold">
+                                <span><i class="fa-solid fa-bolt mr-3 text-indigo-400"></i> Generate Heavy Load</span>
+                                <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-200 text-xs"></i>
+                            </button>
+                            
+                            <button onclick="triggerAction('/api/v1/trigger-error', 'Exception triggered', 'red')" class="group cursor-pointer flex items-center justify-between w-full px-4 py-3 rounded-xl border border-red-500/20 bg-red-900/20 text-red-300 hover:bg-red-900/30 hover:text-red-200 transition-all text-sm font-semibold">
+                                <span><i class="fa-solid fa-triangle-exclamation mr-3 text-red-400"></i> Simulate Exception</span>
+                                <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-200 text-xs"></i>
+                            </button>
+                            
+                            <a href="/metrics" target="_blank" class="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-slate-700/50 bg-slate-800/50 text-slate-300 hover:bg-slate-700/60 hover:text-white transition-all text-sm font-semibold">
+                                <span><i class="fa-solid fa-square-poll-vertical mr-3 text-sky-400"></i> View Raw Prometheus Metrics</span>
+                                <i class="fa-solid fa-arrow-right text-xs opacity-40"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div id="toast" class="hidden mt-6 p-4 rounded-xl border bg-slate-950 text-sm flex items-center transition-all duration-300">
+                        <i class="fa-solid fa-circle-info mr-3 text-indigo-400"></i>
+                        <span id="toast-msg">Action performed</span>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 flex flex-col h-[350px]">
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="relative flex h-2.5 w-2.5">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                            </span>
+                            <span class="text-sm font-bold text-slate-200">Live Traces & Logs Stream</span>
+                        </div>
+                        <button onclick="clearConsole()" class="text-xs text-slate-500 hover:text-red-400 transition cursor-pointer">
+                            <i class="fa-solid fa-eraser mr-1"></i> Clear
+                        </button>
+                    </div>
+                    <div id="log-console" class="console-text flex-1 overflow-y-auto text-xs text-slate-400 space-y-1.5 p-2 bg-slate-950/60 border border-slate-900 rounded-xl leading-relaxed">
+                        </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="border-t border-slate-900 bg-slate-900/40 py-5 mt-auto">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-500 text-xs flex justify-between items-center">
+                <div>Enterprise Performance Environment</div>
+                <div class="flex items-center gap-4">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-shield-halved text-emerald-500"></i> Secure and Monitored</span>
+                    <span>v2.1.0</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Real-time metrics engine
+        async function fetchSystemState() {
+            try {
+                const response = await fetch('/api/v1/system-state');
+                const data = await response.json();
+
+                document.getElementById('cpu-val').innerText = data.cpu_usage + '%';
+                document.getElementById('cpu-cores').innerText = data.cpu_cores + ' Cores';
+                document.getElementById('mem-val').innerText = data.mem_usage + ' MB';
+                document.getElementById('threads-val').innerText = data.thread_count;
+                document.getElementById('db-val').innerText = data.db_connections;
+                document.getElementById('uptime-display').innerText = data.uptime;
+                
+                // Add heartbeat log to console occasionally
+                if (Math.random() > 0.6) {
+                    appendLog('INFO', `GET /api/v1/system-state - Status: 200 - OK`);
+                }
+            } catch (error) {
+                console.error("Error connecting to platform metrics", error);
+            }
+        }
+
+        setInterval(fetchSystemState, 2500);
+        fetchSystemState();
+
+        // Terminal Log Emulator
+        const logConsole = document.getElementById('log-console');
+
+        function appendLog(level, message) {
+            const timestamp = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            const p = document.createElement('p');
+            
+            let colorClass = 'text-sky-400';
+            if (level === 'ERROR' || level === 'FAIL') colorClass = 'text-red-400 font-bold animate-pulse';
+            if (level === 'WARN') colorClass = 'text-amber-400';
+
+            p.innerHTML = `<span class="text-slate-600">[${timestamp}]</span> <span class="${colorClass}">[${level}]</span> ${message}`;
+            logConsole.appendChild(p);
+            logConsole.scrollTop = logConsole.scrollHeight;
+
+            // Keep max 35 elements
+            if (logConsole.children.length > 35) {
+                logConsole.removeChild(logConsole.firstChild);
+            }
+        }
+
+        function clearConsole() {
+            logConsole.innerHTML = '';
+        }
+
+        // Initialize log stream 
+        appendLog('SYSTEM', 'Connecting to distributed tracing subsystem (Port 4317)...');
+        appendLog('SYSTEM', 'Observability platform connected to APM, Telegraf exporters online.');
+        
+        setInterval(() => {
+            if (document.hidden) return;
+            const endpoints = ['/dashboard', '/metrics', '/api/v1/system-state'];
+            const randomEndpoint = endpoints[Math.floor(Math.random() * endpoints.length)];
+            appendLog('INFO', `GET ${randomEndpoint} - Status: 200 - Duration: ${(Math.random() * 0.01 + 0.001).toFixed(4)}s`);
+        }, 4000);
+
+        // Action Sender
+        function triggerAction(url, message, colorGroup) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+
+            appendLog('WARN', `Executing action on ${url.split('?')[0]}`);
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error("API Failure");
+                    return response.json();
+                })
+                .then(data => {
+                    toast.className = `mt-6 p-4 rounded-xl border bg-slate-950 border-indigo-900/50 text-indigo-400 flex items-center transition-all duration-300`;
+                    toastMsg.innerText = message + ` (${data.message || "Success"})`;
+                    toast.classList.remove('hidden');
+                    
+                    appendLog('SUCCESS', `Task executed successfully. Result: ${data.message}`);
+                    
+                    setTimeout(() => toast.classList.add('hidden'), 4000);
+                })
+                .catch(error => {
+                    toast.className = `mt-6 p-4 rounded-xl border bg-slate-950 border-red-900/50 text-red-400 flex items-center transition-all duration-300`;
+                    toastMsg.innerText = "Simulation Exception triggered.";
+                    toast.classList.remove('hidden');
+                    
+                    appendLog('ERROR', `Request failed - HTTP 500 Simulation Exception triggered.`);
+                    
+                    setTimeout(() => toast.classList.add('hidden'), 4000);
+                });
+        }
+    </script>
+</body>
+</html>
