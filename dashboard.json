@@ -218,24 +218,60 @@
       "collapsed": false,
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 8,
         "x": 0,
         "y": 12
       },
       "id": 4,
-      "title": "Logs & Traces Console",
+      "title": "Application Logs",
       "type": "logs",
       "datasource": {
         "type": "loki",
-        "uid": "Loki"
+        "uid": "loki"
       },
       "targets": [
         {
           "datasource": {
             "type": "loki",
-            "uid": "Loki"
+            "uid": "loki"
           },
-          "expr": "{job=\"web-app\"}",
+          "expr": "{job=\"web-app\"} | json | line_format \"{{.time}} | [{{.level}}] | {{.message}} | {{.method}} {{.path}} ({{.status}}) | {{.code_file_path}}:{{.code_line_number}}\"",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "enableLogDetails": true,
+        "showLabels": false,
+        "showLogDetails": true,
+        "showLogLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "sortBy": "desc"
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 12
+      },
+      "id": 5,
+      "title": "Telegraf Metrics Logs",
+      "type": "logs",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "{job=\"telegraf\"}",
           "refId": "A"
         }
       ],
@@ -254,11 +290,47 @@
       "collapsed": false,
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
+        "w": 8,
+        "x": 16,
         "y": 12
       },
-      "id": 5,
+      "id": 6,
+      "title": "OpenTelemetry Collector Logs",
+      "type": "logs",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "{job=\"otel-collector\"} |= \"\"",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "enableLogDetails": true,
+        "showLabels": true,
+        "showLogDetails": true,
+        "showLogLabels": true,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "sortBy": "desc"
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "id": 7,
       "title": "Active Threads & DB Connections Spike Detector",
       "type": "timeseries",
       "datasource": {
@@ -322,6 +394,67 @@
           "placement": "bottom"
         }
       }
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": 8,
+      "title": "HTTP Request Error Rates & Stats",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(http_requests_total{status=~\"5.*\"}[1m]))",
+          "legendFormat": "5xx Errors (Rate)",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(http_requests_total{status=~\"4.*\"}[1m]))",
+          "legendFormat": "4xx Errors (Rate)",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth"
+          }
+        }
+      },
+      "options": {
+        "tooltip": {
+          "mode": "single"
+        },
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
     }
   ],
   "refresh": "5s",
@@ -339,5 +472,5 @@
   "timezone": "utc",
   "title": "Enterprise Observability Dashboard",
   "uid": "enterprise-observability",
-  "version": 1
+  "version": 2
 }

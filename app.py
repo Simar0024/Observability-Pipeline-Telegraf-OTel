@@ -11,6 +11,7 @@ from fastapi.responses import PlainTextResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import generate_latest, Counter, Gauge, Histogram, REGISTRY
+
 from opentelemetry._logs import set_logger_provider
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
@@ -30,9 +31,6 @@ provider.add_log_record_processor(BatchLogRecordProcessor(exporter))
 handler = LoggingHandler(level=logging.INFO, logger_provider=provider)
 logging.getLogger().addHandler(handler)
 logging.getLogger().setLevel(logging.INFO)
-
-# Test log
-logging.info("OTLP log successfully pushed to the collector.")
 
 # Define Log Directory and File
 LOG_DIR = Path("/opt/logs")
@@ -62,6 +60,9 @@ stream_handler.setFormatter(JSONFormatter())
 
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
+
+# Test log
+logger.info("OTLP log successfully pushed to the collector.")
 
 app = FastAPI(title="ProdObservabilityAPI", version="2.2.0")
 templates = Jinja2Templates(directory=".")
@@ -93,7 +94,7 @@ async def metrics_middleware(request, call_next):
     duration = time.time() - start_time
     status_code = response.status_code
     
-    REQUEST_COUNT.labels(method=method, endpoint=path, status=status_code).inc()
+    REQUEST_COUNT.labels(method=method, endpoint=path, status=str(status_code)).inc()
     REQUEST_LATENCY.labels(method=method, endpoint=path).observe(duration)
     
     log_data = {

@@ -18,7 +18,9 @@ exporters:
       insecure: true
 
   otlp_http/loki:
-    endpoint: http://loki:3100/otlp
+    endpoint: "http://loki:3100/otlp"
+    tls:
+      insecure: true
 
   file:
     path: /opt/logs/otel-collector.log
@@ -32,6 +34,11 @@ exporters:
     endpoint: 0.0.0.0:8889
 
 service:
+  telemetry:
+    logs:
+      level: "info"
+      encoding: "json"
+
   pipelines:
     metrics:
       receivers: [otlp]
@@ -44,4 +51,4 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug, otlp_grpc]
+      exporters: [debug, otlp_grpc, otlp_http/loki]
