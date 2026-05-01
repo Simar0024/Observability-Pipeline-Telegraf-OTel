@@ -6,11 +6,13 @@ import logging
 import random
 import json
 from pathlib import Path
+
 from fastapi import FastAPI, BackgroundTasks, HTTPException, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import generate_latest, Counter, Gauge, Histogram, REGISTRY
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from opentelemetry._logs import set_logger_provider
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
@@ -49,7 +51,7 @@ class JSONFormatter(logging.Formatter):
         }
         return json.dumps(log_record)
 
-logger = logging.getLogger("ProdObservabilityApp")
+logger = logging.getLogger("ProdObservabilityAPI")
 logger.setLevel(logging.INFO)
 
 # File and Stream Handlers
