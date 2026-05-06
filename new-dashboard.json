@@ -235,18 +235,18 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{job=\"web-app\"}",
+          "expr": "{job=\"web-app\"} | json | line_format \"{{.time}} | [{{.level}}] | {{.message}} | {{.method}} {{.path}} ({{.status}}) | {{.code_file_path}}:{{.code_line_number}}\"",
           "refId": "A"
         }
       ],
       "options": {
         "enableLogDetails": true,
-        "showLabels": true,
+        "showLabels": false,
         "showLogDetails": true,
-        "showLogLabels": true,
+        "showLogLabels": false,
         "showCommonLabels": false,
         "wrapLogMessage": true,
-        "prettifyLogMessage": true,
+        "prettifyLogMessage": false,
         "sortBy": "desc"
       }
     },
