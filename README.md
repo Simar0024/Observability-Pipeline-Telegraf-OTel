@@ -162,4 +162,4 @@ docker-compose up --build
 
 ---
 
-> _Made with ❤️ for modern observability!_
+> _Made by Simarjit Singh for modern observability!_
